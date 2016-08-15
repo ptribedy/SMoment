@@ -2467,27 +2467,6 @@ class MomErrorN
 		void CalcMomError(string FORMAT="LOUD") //
 		{
 
-			//Following are examples of the expressions for first few orders of moments
-			////
-			//(order-1) 5-terms:
-			//∑_{i | j} = Cov(µ_{i}, µ_{j}) = 
-			//
-			//μ_{i+j} − μ_{i} μ_{j} 
-			//
-			//
-			//(order-2) 10-terms:
-			//∑_{i,j | k,l} = Cov(µ_{i,j}, µ_{k,l}) = 
-			//
-			//μ_{i+k,j+l} − μ_{i,j} μ_{k,l} 
-			//
-			//
-			//(order-3) 17-terms:
-			//∑_{i,j,k | l,m,n} = Cov(µ_{i,j,k}, µ_{l,m,n}) = 
-			//
-			//μ_{i+l,j+m,k+n} − μ_{i,j,k} μ_{l,m,n}
-			//
-
-
 			vector<FactVec> TEMP_nthE;
 			FactVec TEMP_TEMP_nthE (static_cast<int>(fsize));
 
@@ -3577,20 +3556,7 @@ class CumulantVec : public CentVecN
 
 
 		void Cumulant2Moment(const int mdim__, string FORMAT="")
-		{
-
-			//					cout<<"(Inside Cumulant2Moment) mdim ="<<mdim__<<endl;
-
-			//cout<<"-------------------------------------------------------------------------------"<<endl;
-			//cout<<"K_1= Mu_1"<<endl;
-			//cout<<"K_2= Mu_2 -  K_1 Mu_1"<<endl;
-			//cout<<"K_3= Mu_3 -  K_1 Mu_2  - 2 K_2 Mu_1"<<endl; 
-			//cout<<"K_4= Mu_4 -  K_1 Mu_3  - 3 K_2 Mu_2  - 3 K_3 Mu_1"<<endl; 
-			//cout<<"K_5= Mu_5 -  K_1 Mu_4  - 4 K_2 Mu_3  - 6 K_3 Mu_2  - 4 K_4 Mu_1"<<endl; 
-			//cout<<"K_6= Mu_6 -  K_1 Mu_5  - 5 K_2 Mu_4  - 10 K_3 Mu_3  - 10 K_4 Mu_2  - 5 K_5 Mu_1"<<endl; 
-			//cout<<"-------------------------------------------------------------------------------"<<endl;
-
-
+		{	
 			if(FORMAT!="NOEXPS")cout<<"Func to convert cumulant K_m to moments µ_m = <∆N^m>"<<endl; 
 
 			for(int k_=1; k_<=mdim__; k_++)

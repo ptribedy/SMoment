@@ -1,0 +1,1 @@
+tar cf - FactMom.h SMoment.h sampleinput.dat main run README ToyModel.h main.C numbers.dat maketar >smoment_1.0.tar

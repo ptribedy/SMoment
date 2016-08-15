@@ -1,0 +1,15 @@
+#To run this code simply do :
+$./run
+
+#./run does both complie and run the code "main.C" where inputs are set
+#To change inputs modify "main.C"
+#Look at the 
+
+"FactMom.h"
+#Contains different classes that performs algebra
+
+"SMoment.h"
+#Contains single class that performs analysis
+
+"ToyModel.h"
+#Class to generate number of particles for a different values of efficiencies  

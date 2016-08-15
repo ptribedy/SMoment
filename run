@@ -1,0 +1,5 @@
+#!/bin/bash
+rm main.o
+g++ -Wall -Os -w -pipe  -I. $(root-config --cflags) -c main.C
+g++ -Wall -Os -w -pipe  -I. $(root-config --cflags) main.o $(root-config --glibs) -o main
+./main

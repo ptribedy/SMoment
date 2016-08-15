@@ -6,10 +6,10 @@ $./run
 #Look at the 
 
 "FactMom.h"
-#Contains different classes that performs algebra
+#Contains different classes to perform algebra of higher moments
 
 "SMoment.h"
-#Contains single class that performs analysis
+#Contains single class that performs e-by-e analysis of higher moments 
 
 "ToyModel.h"
-#Class to generate number of particles for a different values of efficiencies  
+#Class to generate multiplicity according to different distributions and to simulate efficiency 

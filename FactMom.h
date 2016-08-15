@@ -1,5 +1,5 @@
 /*
-  Class to calculate algebra of multi-variate moments of different orders
+  Class to perform algebra of multi-variate moments of different orders
   Copyright (C) Prithwish Tribedy - April 5,2015 
   -pls- share your comments to <ptribedy@vecc.gov.in>,<ptribedy@bnl.gov>,<prithwish2005@gmail.com>
 

@@ -1709,6 +1709,123 @@ class SMomentN : public SMoment{
 			ObsMom__ = _ObsMom__;
 		}
 
+	
+
+		void CalcKochRatio(const int Centrality_, const vector<int> mth_, KochRatio * kchr__, long double& IncMom__, long double& ObsMom__, const string VERBOSE_="")
+		{
+
+			vector<int> nth__;     // order of numerator like 11
+			vector<int> dth__;     // order of denomenator like 02
+
+			nth__.push_back(kchr__->getkratio().at(0).getD(0));  dth__.push_back(kchr__->getkratio().at(1).getD(0));   
+			nth__.push_back(kchr__->getkratio().at(0).getD(1));  dth__.push_back(kchr__->getkratio().at(1).getD(1));   
+                                                                                                        
+			nth__.push_back(kchr__->getkratio().at(0).getD(0));  dth__.push_back(kchr__->getkratio().at(1).getD(0));   
+			nth__.push_back(kchr__->getkratio().at(0).getD(1));  dth__.push_back(kchr__->getkratio().at(1).getD(1));   
+
+
+			CentErrorN nerr__(nth__); // call central moment error estimation class
+			CentErrorN derr__(dth__); // call central moment error estimation class
+
+			nerr__.CalcCentError("NOEXPS"); // calculate the expression of error
+			derr__.CalcCentError("NOEXPS"); // calculate the expression of error
+
+			long double IncNum__; long double IncDen__;
+			long double ObsNum__; long double ObsDen__;
+
+			this->CalcCorrMom(Centrality_, nth__, &nerr__, IncNum__, ObsNum__,"NOEXPS");
+			this->CalcCorrMom(Centrality_, dth__, &derr__, IncDen__, ObsDen__,"NOEXPS");
+
+//
+//			cout<<"Estimated moments for numerator: "<<IncNum__<<" "<<ObsNum__<<endl;
+//			cout<<"Estimated moments for denominator: "<<IncDen__<<" "<<ObsDen__<<endl;
+
+//		void CalcCorrMom(const int Centrality_, const vector<int> mth_, CentErrorN * cerr__, long double& IncMom__, long double& ObsMom__, const string VERBOSE_="", bool CrossTerm=0)
+
+			IncMom__ = (IncNum__)/(IncDen__);
+			ObsMom__ = (ObsNum__)/(ObsDen__);
+
+		}
+
+		void CalcKochRatioError(const int Centrality_, const vector<int> mth_, KochRatio * kchr__, long double& IncMom__, long double& ObsMom__, const string VERBOSE_="")
+		{
+
+			//Koch ratio : KR = C_{mn}/C_{kl}
+                        //Var(KR) = (1/C_{kl})^2 x Cov(C_{mn},C_{mn}) + (-C_{mn}/C_{kl}^2)^2 x Cov(C_{kl},C_{kl}) + 2 x (-C_{mn}/C_{kl}^3) x Cov(C_{mn},C_{kl})
+
+			vector<int> nth__;     // order of numerator like 11
+			vector<int> dth__;     // order of denomenator like 02
+			vector<int> vth__;     // order for the varince-covariance term
+
+			nth__.push_back(kchr__->getkratio().at(0).getD(0));  dth__.push_back(kchr__->getkratio().at(1).getD(0));   
+			nth__.push_back(kchr__->getkratio().at(0).getD(1));  dth__.push_back(kchr__->getkratio().at(1).getD(1));   
+                                                                                                        
+			nth__.push_back(kchr__->getkratio().at(0).getD(0));  dth__.push_back(kchr__->getkratio().at(1).getD(0));   
+			nth__.push_back(kchr__->getkratio().at(0).getD(1));  dth__.push_back(kchr__->getkratio().at(1).getD(1));   
+
+			vth__.push_back(kchr__->getkratio().at(0).getD(0)); 
+			vth__.push_back(kchr__->getkratio().at(0).getD(1)); 
+                                                                            
+			vth__.push_back(kchr__->getkratio().at(1).getD(0)); 
+			vth__.push_back(kchr__->getkratio().at(1).getD(1)); 
+
+			CentErrorN nerr__(nth__); // call central moment error estimation class
+			CentErrorN derr__(dth__); // call central moment error estimation class
+			CentErrorN verr__(vth__); // call central moment error estimation class
+
+			nerr__.CalcCentError("NOEXPS"); // calculate the expression of error
+			derr__.CalcCentError("NOEXPS"); // calculate the expression of error
+			verr__.CalcCentError("NOEXPS"); // calculate the expression of error
+
+			long double IncNum__; long double IncDen__;
+			long double ObsNum__; long double ObsDen__;
+
+			//Koch ratio : KR = C_{mn}/C_{kl} = Num/Den
+
+			this->CalcCorrMom(Centrality_, nth__, &nerr__, IncNum__, ObsNum__,"NOEXPS");
+			this->CalcCorrMom(Centrality_, dth__, &derr__, IncDen__, ObsDen__,"NOEXPS");
+
+                        //Var(KR) = (1/C_{kl})^2 x Cov(C_{mn},C_{mn}) + (C_{mn}^2/C_{kl}^4) x Cov(C_{kl},C_{kl}) + 2 x (-C_{mn}/C_{kl}^3) x Cov(C_{mn},C_{kl})
+
+			//term 1 :  (1/C_{kl})^2 x Cov(C_{mn},C_{mn})
+			long double IncTerm1;
+			long double ObsTerm1;
+
+			this->CalcCorrError(Centrality_, nth__, &nerr__, IncTerm1, ObsTerm1,"NOEXPS");
+			IncTerm1 *= (1./IncDen__/IncDen__);
+			ObsTerm1 *= (1./ObsDen__/ObsDen__);
+
+			//term 2 :  (C_{mn}^2/C_{kl}^4) x Cov(C_{kl},C_{kl}) 
+			long double IncTerm2;
+			long double ObsTerm2;
+
+			this->CalcCorrError(Centrality_, dth__, &derr__, IncTerm2, ObsTerm2,"NOEXPS");
+			IncTerm2 *= (1.*IncNum__*IncNum__/IncDen__/IncDen__/IncDen__/IncDen__);
+			ObsTerm2 *= (1.*ObsNum__*ObsNum__/ObsDen__/ObsDen__/ObsDen__/ObsDen__);
+
+			//term 3 : 2 x (-C_{mn}/C_{kl}^3) x Cov(C_{mn},C_{kl})
+			long double IncTerm3;
+			long double ObsTerm3;
+
+			this->CalcCorrError(Centrality_, vth__, &verr__, IncTerm3, ObsTerm3,"NOEXPS");
+			IncTerm3 *= (-2.*IncNum__/IncDen__/IncDen__/IncDen__);
+			ObsTerm3 *= (-2.*ObsNum__/ObsDen__/ObsDen__/ObsDen__);
+
+
+//			cout<<"Estimated moments for term 1: "<<IncTerm1<<" "<<ObsTerm1<<endl;
+//			cout<<"Estimated moments for term 2: "<<IncTerm2<<" "<<ObsTerm2<<endl;
+//			cout<<"Estimated moments for term 3: "<<IncTerm3<<" "<<ObsTerm3<<endl;
+
+			IncMom__ = IncTerm1 + IncTerm2 + IncTerm3;
+			ObsMom__ = ObsTerm1 + ObsTerm2 + ObsTerm3;
+
+
+			IncMom__ = (nevent.at(Centrality_)>0 && IncMom__>0) ? sqrt(IncMom__/nevent.at(Centrality_)) : 0;
+			ObsMom__ = (nevent.at(Centrality_)>0 && ObsMom__>0) ? sqrt(ObsMom__/nevent.at(Centrality_)) : 0;
+
+//			cout<<"Estimated final moment: "<<IncMom__<<" "<<ObsMom__<<endl;
+		}
+	
 };
 
 #endif

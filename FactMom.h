@@ -6356,7 +6356,10 @@ class KochRatio : public CumulantRatio
 //				cout<<endl;
 			}
 
-
+  			if(kratio.size()<2){
+                                cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio \033[0m\n"<<" "<<endl;
+                                abort();
+                        }
 //			maxvec.printD();
 
 

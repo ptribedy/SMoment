@@ -42,7 +42,8 @@
 //version 3.2 -modified Dec 21,2015 //FactVec assignment with diff expo modified 
 //version 3.3 -modified Dec 28,2015 //CorrErr class modified
 //version 3.4 -modified July 1,2017 //KochRatio class added
-//version 3.5 -current version
+//version 3.5 -modified July 3,2017 //KochRatio class modified
+//version 3.6 -current version
 #ifndef FactMom_h
 #define FactMom_h
 

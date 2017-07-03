@@ -20,7 +20,120 @@
 #include "TRandom.h"
 
 
+//Example of initializing Koch Ratio
+int main_kochratio(){
+	std::string input = "C11/C20";  //no space 
+	KochRatio * kh = new KochRatio(input);
 
+	vector<FactVec> fvv_;
+	fvv_=kh->CalcFactVec();
+
+	return 0;
+}
+
+//Example of calculating Koch Ratio for a class of events
+int main()
+{
+	std::string input = "C11/C20";  //no space 
+	KochRatio * kh = new KochRatio(input);
+
+	vector<FactVec> fvv_;
+	fvv_=kh->CalcFactVec();
+
+	//Set the bins of efficiency corresponding to each variate (N1, \bar{N1}, N2, \bar{N2},...)
+	vector<int> abinN;
+	abinN.push_back(1); //(e.g. No. of protons)
+	abinN.push_back(1); //(e.g. No. of anti-protons)
+
+	abinN.push_back(1); //(e.g. No. of protons)
+	abinN.push_back(1); //(e.g. No. of anti-protons)
+
+	vector<double> eff_;
+	eff_.push_back(1); //(e.g. No. of protons)
+	eff_.push_back(1); //(e.g. No. of anti-protons)
+
+	eff_.push_back(1);
+	eff_.push_back(1);
+
+	//Set the SMoment class for e-by-e analysis
+	SMomentN * smt =  new SMomentN(1,fvv_,abinN);  //(centrality-bins, moment-vector, efficiency-vector)
+
+	//Event loop
+	for(int i=0; i<5e5; i++){
+		vector<int> Np_;
+		Np_.push_back(gRandom->Binomial(20,0.5));
+		Np_.push_back(gRandom->Binomial(20,0.5));
+
+		Np_.push_back(gRandom->Binomial(10,0.5));
+		Np_.push_back(gRandom->Binomial(10,0.5));
+
+		smt->Fill(Np_,eff_,0,1.);
+
+		vector<int>().swap(Np_); 
+		if(i%10000==0) cout<<" Event # "<<i<<endl;
+	}
+
+	long double IncMom_ = 0.0L; 
+	long double IncErr_ = 0.0L;
+	long double ObsMom_ = 0.0L;
+	long double ObsErr_ = 0.0L;
+
+	int Centrality =0;
+
+	smt->CalcKochRatio(Centrality, vector<int>(), kh, IncMom_, ObsMom_,"LOUD");
+	smt->CalcKochRatioError(Centrality, vector<int>(), kh, IncErr_, ObsErr_,"LOUD");
+
+	cout<<" KR("<<Centrality<<") : Corrected Mom,Err= "<<IncMom_<<"±"<<IncErr_<<" Un-Corrected Mom,Err= "<<ObsMom_<<"±"<<ObsErr_<<endl;
+}
+
+
+int new_main()
+{
+	const int mth =3;
+
+	CumulantVec * clt__ =new CumulantVec();//mth);
+	vector<FactVec> fvv=clt__->CalcFactVec(mth);
+
+	//Set the bins of efficiency corresponding to each variate (N1, \bar{N1}, N2, \bar{N2},...)
+	vector<int> abinN;
+	abinN.push_back(2); //(e.g. No. of protons)
+	abinN.push_back(2); //(e.g. No. of anti-protons)
+
+	vector<double> eff_;
+	eff_.push_back(0.5); eff_.push_back(0.5);//(e.g. No. of protons)
+	eff_.push_back(0.5); eff_.push_back(0.5);//(e.g. No. of anti-protons)
+
+	//Set the SMoment class for e-by-e analysis
+	SMomentN * smt =  new SMomentN(1,fvv,abinN);  //(centrality-bins, moment-vector, efficiency-vector)
+
+	//Event loop
+	for(int i=0; i<1e5; i++){
+		vector<int> Np_;
+		Np_.push_back(gRandom->Binomial(20,0.5));
+		Np_.push_back(gRandom->Binomial(20,0.5));
+
+		Np_.push_back(gRandom->Binomial(10,0.5));
+		Np_.push_back(gRandom->Binomial(10,0.5));
+
+		smt->Fill(Np_,eff_,0,1.);
+
+		vector<int>().swap(Np_); 
+		if(i%10000==0) cout<<" Event # "<<i<<endl;
+	}
+
+	long double IncMom_ = 0.0L; 
+	long double IncErr_ = 0.0L;
+	long double ObsMom_ = 0.0L;
+	long double ObsErr_ = 0.0L;
+
+	int Centrality =0;
+
+	for(int i=0; i<3; i++){
+		smt->CalcCumulant(Centrality,1,clt__,IncMom_,ObsMom_,"LOUD");
+		smt->CalcCumulantError(Centrality,1,clt__,IncErr_,ObsErr_,"LOUD");
+		cout<<" K("<<i<<") : Corrected Mom,Err= "<<IncMom_<<"±"<<IncErr_<<" Un-Corrected Mom,Err= "<<ObsMom_<<"±"<<ObsErr_<<endl;
+	}
+}
 
 int main_example5()
 {
@@ -51,18 +164,6 @@ int main_example3()
 	clt__.CalcVariance(mth); ////Find variance in terms of central moments
 }
 
-int main_example2(){
-	MomVecN mnt_; //Class to handle moments
-
-	vector<int> mth;   //vector for multi-variate moment 
-	mth.push_back(4);  //order of first variate 
-	mth.push_back(2);  //order of first variate 
-
-	mnt_.Mom2FactN(mth); //convert to factorial moment
-
-	//mnt_.Error(mth);
-}
-
 int main_example1()
 {
 
@@ -77,60 +178,17 @@ int main_example1()
 	clt__.Cumulant2FactMoment(mth,abinN); //cumulants --> factorial moments with efficiency
 }
 
+int main_example2(){
+	MomVecN mnt_; //Class to handle moments
 
+	vector<int> mth;   //vector for multi-variate moment 
+	mth.push_back(4);  //order of first variate 
+	mth.push_back(2);  //order of first variate 
 
-//example of using SMomentN class to perform e-by-e analysis
-int main()
-{
-	const int mth =3;
+	mnt_.Mom2FactN(mth); //convert to factorial moment
 
-	CumulantVec * clt__ =new CumulantVec();//mth);
-	vector<FactVec> fvv=clt__->CalcFactVec(mth);
-
-	//Set the bins of efficiency corresponding to each variate (N1, \bar{N1}, N2, \bar{N2},...)
-	vector<int> abinN;
-	abinN.push_back(2); //(e.g. No. of protons)
-	abinN.push_back(2); //(e.g. No. of anti-protons)
-
-	vector<double> eff_;
-	eff_.push_back(0.5); eff_.push_back(0.5);//(e.g. No. of protons)
-	eff_.push_back(0.5); eff_.push_back(0.5);//(e.g. No. of anti-protons)
-
-	//Set the SMoment class for e-by-e analysis
-	SMomentN * smt =  new SMomentN(1,fvv,abinN);  //(centrality-bins, moment-vector, efficiency-vector)
-
-	//Event loop
-	for(int i=0; i<1e5; i++){
-		vector<int> Np_;
-
-		//Generate no. of anti-protons with mean 20 sigma 5 from Gaussian dist & implement 50% efficiency
-		Np_.push_back(gRandom->Binomial(gRandom->Gaus(20,5),0.5));
-		Np_.push_back(gRandom->Binomial(gRandom->Gaus(20,5),0.5));
-
-		//Generate no. of anti-protons with mean 10 sigma 5 from Gaussian dist & implement 50% efficiency
-		Np_.push_back(gRandom->Binomial(gRandom->Gaus(10,5),0.5));
-		Np_.push_back(gRandom->Binomial(gRandom->Gaus(10,5),0.5));
-
-		smt->Fill(Np_,eff_,0,1.);
-
-		vector<int>().swap(Np_); 
-		if(i%10000==0) cout<<" Event # "<<i<<endl;
-	}
-
-	long double IncMom_ = 0.0L; 
-	long double IncErr_ = 0.0L;
-	long double ObsMom_ = 0.0L;
-	long double ObsErr_ = 0.0L;
-
-	int Centrality =0;
-
-	for(int i=0; i<3; i++){
-		smt->CalcCumulant(Centrality,1,clt__,IncMom_,ObsMom_,"LOUD");
-		smt->CalcCumulantError(Centrality,1,clt__,IncErr_,ObsErr_,"LOUD");
-		cout<<" K("<<i<<") : Corrected Mom,Err= "<<IncMom_<<"±"<<IncErr_<<" Un-Corrected Mom,Err= "<<ObsMom_<<"±"<<ObsErr_<<endl;
-	}
+	//mnt_.Error(mth);
 }
-
 
 int toymodel_main()
 	//int main()
@@ -223,8 +281,8 @@ int momErr_main()
 	//	const int mth=6;
 
 	vector<int> mth;
-	mth.push_back(4);
-	mth.push_back(2);
+	mth.push_back(6);
+	mth.push_back(0);
 	//	mth.push_back(0);
 	//	mth.push_back(0);
 	//	mth.push_back(0);
@@ -238,18 +296,19 @@ int momErr_main()
 	mnt_.Error(mth);
 
 
-	//	vector<int> mth_;
-	//	mth_.push_back(8);
-	//	mth_.push_back(4);
-	//	mth_.push_back(2);
-	//
-	//	mth_.push_back(8);
-	//	mth_.push_back(4);
-	//	mth_.push_back(2);
-	//
-	//
-	//	MomErrorN emnt_(mth_);
-	//	emnt_.CalcMomError();
+	/*
+	   vector<int> mth_;
+	   mth_.push_back(2);
+	//	     mth_.push_back(4);
+	//	     mth_.push_back(2);
+
+	mth_.push_back(1);
+	//	     mth_.push_back(4);
+	//	     mth_.push_back(2);
+
+
+	MomErrorN emnt_(mth_);
+	emnt_.CalcMomError();
 
 	//	mth.push_back(2);
 	//	mth.push_back(2);
@@ -262,6 +321,8 @@ int momErr_main()
 	//	SICumulantVec sic_;
 	//
 	//	sic_.SICumulant2Cumulant(mth);
+
+	 */
 
 }
 
@@ -609,8 +670,8 @@ int CentErr_main()
 	//mth.push_back(0); 
 	//mth.push_back(2); 
 
-	mth.push_back(2); 
-	mth.push_back(0); 
+	mth.push_back(1); 
+	mth.push_back(1); 
 
 	mth.push_back(2); 
 	mth.push_back(0); 
@@ -1084,7 +1145,7 @@ int corr_main()
 	//
 	//set the powers of the variates of the central moment <(∆N1-<∆N1>)^{?} (∆N2-<∆N2>)^{?}...>
 	vector<int> mth;
-	mth.push_back(0); 
+	mth.push_back(2); 
 	mth.push_back(2); 
 //	mth.push_back(2); 
 //	mth.push_back(2); 
@@ -1223,8 +1284,9 @@ int corr_main()
 }
 
 
-int main_readstring() {
 
+
+int main_readstring(){
 	std::string input = "K4/K2";  //no space 
 	std::stringstream ss;
 	ss << input;

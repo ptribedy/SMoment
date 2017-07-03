@@ -1,23 +1,23 @@
 /*
-  Class to perform algebra of multi-variate moments of different orders
+  Class to calculate factorial moments of different orders
   Copyright (C) Prithwish Tribedy - April 5,2015 
   -pls- share your comments to <ptribedy@vecc.gov.in>,<ptribedy@bnl.gov>,<prithwish2005@gmail.com>
 
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//Version 1.0 -modified April 9,2015 // Stirling algorithm added
+//Version 1.0 -modified April 9,2015 // Stirling series added
 //version 1.1 -modified April 11,2015 // CentVec class added
 //version 1.2 -modified April 16,2015 // Truncation problem reduced
 //version 1.3 -modified April 17,2015 //
@@ -41,8 +41,9 @@
 //version 3.1 -modified Dec 10,2015
 //version 3.2 -modified Dec 21,2015 //FactVec assignment with diff expo modified 
 //version 3.3 -modified Dec 28,2015 //CorrErr class modified
-//version 3.4 -modified Aug 11,2016
-//version 3.5 -current version
+//version 3.4 -modified July 1,2017 //KochRatio class added
+//version 3.5 -modified July 3,2017 //KochRatio class modified
+//version 3.6 -current version
 #ifndef FactMom_h
 #define FactMom_h
 
@@ -91,8 +92,13 @@ class FactVec
 		void addD(const int i_, const int D_){if(i_>ndim-1) cout<<"ERROR: out side FactVec size"<<endl; fmnab.at(i_) += D_;}
 		
 
+		//void setE(const int E_){fexp=E_;}
+		//void addE(const int E_){fexp += E_;}
+
 		void setE(const float E_){fexp=E_;}
 		void addE(const float E_){fexp += E_;}
+
+
 
 
 		int  sumD() const {int sum__=0; for(int i_=0; i_<ndim; i_++) sum__ += fmnab.at(i_); return sum__;}
@@ -101,6 +107,7 @@ class FactVec
 		int  getE() const {return fexp;}
 
 		int  size() const {return ndim;}
+		//int  expo() const {return fexp;}
 		float  expo() const {return fexp;}
 
 
@@ -1188,7 +1195,7 @@ class CentVecN
 		vector<int> vvmn;
                 string MOMENT;
 		vector<vector<FactVec> >nthErr;
-		vector<long> Sseries(const int order);
+		vector<long> Stirling(const int order);
 		
 	private:
 		size_t mdim;
@@ -2240,7 +2247,9 @@ void CentVecN::GetCentMomentN(const vector<int> mth__, const vector<int> abin__,
 
 
 
-vector<long> CentVecN::Sseries(const int order){
+vector<long> CentVecN::Stirling(const int order){
+
+	//Function to return Stirling series for a given order
 
 	vector<long> anm1;
 
@@ -2291,7 +2300,7 @@ CentVec * CentVecN::Cent2Fact(const int order)
 	for(int j=0;j<=order;j++){
 
 		vector<long> amn;
-		amn=Sseries(order-j);
+		amn=Stirling(order-j);
 		int stsize=amn.size();
 
 		for(int i=0;i<stsize;i++)
@@ -2467,6 +2476,27 @@ class MomErrorN
 		void CalcMomError(string FORMAT="LOUD") //
 		{
 
+			//Following are examples of the expressions for first few orders of moments
+			////
+			//(order-1) 5-terms:
+			//∑_{i | j} = Cov(µ_{i}, µ_{j}) = 
+			//
+			//μ_{i+j} − μ_{i} μ_{j} 
+			//
+			//
+			//(order-2) 10-terms:
+			//∑_{i,j | k,l} = Cov(µ_{i,j}, µ_{k,l}) = 
+			//
+			//μ_{i+k,j+l} − μ_{i,j} μ_{k,l} 
+			//
+			//
+			//(order-3) 17-terms:
+			//∑_{i,j,k | l,m,n} = Cov(µ_{i,j,k}, µ_{l,m,n}) = 
+			//
+			//μ_{i+l,j+m,k+n} − μ_{i,j,k} μ_{l,m,n}
+			//
+
+
 			vector<FactVec> TEMP_nthE;
 			FactVec TEMP_TEMP_nthE (static_cast<int>(fsize));
 
@@ -2620,7 +2650,7 @@ class MomVecN : public CentVecN, MomErrorN
 				temp_CCmn_.clear();
 				temp_vvmn_.clear();
 
-				vector<long> amn =Sseries(morder.at(i_));
+				vector<long> amn =Stirling(morder.at(i_));
 
 				for(size_t j_=0; j_<amn.size(); j_++)
 				{       
@@ -2863,10 +2893,10 @@ class CentErrorN : public CentVecN
 		size_t fsize;
 	public:
 		CentErrorN(const vector<int> mth_) : CentVecN(0,"Error")
-	{
-		mthE=mth_;
-		fsize=(int(mthE.size()/2));
-	}
+		{
+			mthE=mth_;
+			fsize=(int(mthE.size()/2));
+		}
 
 		~CentErrorN()
 		{
@@ -2882,6 +2912,46 @@ class CentErrorN : public CentVecN
 
 		void CalcCentError(string FORMAT="LOUD") //
 		{
+
+			//Following are examples of the expressions for first few orders of moments
+			////
+			//(order-1) 5-terms:
+			//∑_{i | j} = Cov(µ_{i}, µ_{j}) = 
+			//
+			//μ_{i+j} − μ_{i} μ_{j} 
+			//
+			//− i μ_{i−1} μ_{j+1} − j μ_{i+1} μ_{j−1} 
+			//
+			//+ ij μ_{i−1} μ_{j−1} μ_{2} 
+			//
+			//
+			//(order-2) 10-terms:
+			//∑_{i,j | k,l} = Cov(µ_{i,j}, µ_{k,l}) = 
+			//
+			//μ_{i+k,j+l} − μ_{i,j} μ_{k,l} 
+			//
+			//− i μ_{i−1,j} μ_{k+1,l} − j μ_{i,j-1} μ_{k,l+1} - k µ_{i+1,j} µ_{k-1,l} - l µ_{i,j+1} µ_{k,l-1}  
+			//
+			//+ ik μ_{i−1,j} μ_{k−1,l} μ_{2,0} + jl µ_{i,j-1} µ_{k,l-1} µ_{0,2} 
+			//+ il µ_{i-1,j} µ_{k,l-1} µ_{1,1} + jk µ_{i,j-1} µ_{k-1,l} µ_{1,1}
+			//
+			//
+			//(order-3) 17-terms:
+			//∑_{i,j,k | l,m,n} = Cov(µ_{i,j,k}, µ_{l,m,n}) = 
+			//
+			//μ_{i+l,j+m,k+n} − μ_{i,j,k} μ_{l,m,n}
+			//
+			//- i µ_{i-1,j,k} µ_{l+1,m,n} - j µ_{i,j-1,k} µ_{l,m+1,n} - k µ_{i,j,k-1} µ_{l,m,n+1} 
+			//- l µ_{i+1,j,k} µ_{l-1,m,n} - m µ_{i,j+1,k} µ_{l,m-1,n} - n µ_{i,j,k+1} µ_{l,m,n-1}
+			// 
+			//+ il µ_{i-1,j,k} µ_{l-1,m,n} µ_{2,0,0} + jm µ_{i,j-1,k} µ_{l,m-1,n} µ_{0,2,0} 
+			//+ kn µ_{i,j,k-1} µ_{l,m,n-1} µ_{0,0,2} + im µ_{i-1,j,k} µ_{l,m-1,n} µ_{1,1,0} 
+			//+ in µ_{i-1,j,k} µ_{l,m,n-1} µ_{1,0,1} + jn µ_{i,j-1,k} µ_{l,m,n-1} µ_{0,1,1}
+			//+ jl µ_{i,j-1,k} µ_{l-1,m,n} µ_{1,1,0} + kl µ_{i,j,k-1} µ_{l-1,m,n} µ_{1,0,1}
+			//+ km µ_{i,j,k-1} µ_{i,m-1,n} µ_{0,1,1}
+			//
+
+
 
 			vector<FactVec> TEMP_nthE;
 			FactVec TEMP_TEMP_nthE (static_cast<int>(fsize));
@@ -3556,7 +3626,20 @@ class CumulantVec : public CentVecN
 
 
 		void Cumulant2Moment(const int mdim__, string FORMAT="")
-		{	
+		{
+
+			//					cout<<"(Inside Cumulant2Moment) mdim ="<<mdim__<<endl;
+
+			//cout<<"-------------------------------------------------------------------------------"<<endl;
+			//cout<<"K_1= Mu_1"<<endl;
+			//cout<<"K_2= Mu_2 -  K_1 Mu_1"<<endl;
+			//cout<<"K_3= Mu_3 -  K_1 Mu_2  - 2 K_2 Mu_1"<<endl; 
+			//cout<<"K_4= Mu_4 -  K_1 Mu_3  - 3 K_2 Mu_2  - 3 K_3 Mu_1"<<endl; 
+			//cout<<"K_5= Mu_5 -  K_1 Mu_4  - 4 K_2 Mu_3  - 6 K_3 Mu_2  - 4 K_4 Mu_1"<<endl; 
+			//cout<<"K_6= Mu_6 -  K_1 Mu_5  - 5 K_2 Mu_4  - 10 K_3 Mu_3  - 10 K_4 Mu_2  - 5 K_5 Mu_1"<<endl; 
+			//cout<<"-------------------------------------------------------------------------------"<<endl;
+
+
 			if(FORMAT!="NOEXPS")cout<<"Func to convert cumulant K_m to moments µ_m = <∆N^m>"<<endl; 
 
 			for(int k_=1; k_<=mdim__; k_++)
@@ -5726,7 +5809,7 @@ class SICumulantVec : public CentVecN
 
 class CumulantRatio : public CumulantVec, CentVecN 
 {
-	private:
+	protected:
 
 		vector<int> order;
 		vector<float> expo;
@@ -5778,6 +5861,7 @@ class CumulantRatio : public CumulantVec, CentVecN
 
 		while(std::getline(ss, temp,'/')) {
 
+//			cout<<"Im here "<<ss<<" "<<temp<<endl;
 			if(counter==0 && temp.size()>3) 
 			{
 				std::stringstream uu;
@@ -5816,6 +5900,7 @@ class CumulantRatio : public CumulantVec, CentVecN
 		}
 
 
+
 		float intensive =0.;
 		maxorder=0;
 
@@ -5823,12 +5908,20 @@ class CumulantRatio : public CumulantVec, CentVecN
 		{
 			intensive += (order.at(__l)*expo.at(__l));
 			if(order.at(__l)>maxorder) maxorder=order.at(__l);
+
 		}
 
 		//if(intensive!=0)cout<<"WARNING : Cumulant Ratio is not intensive"<<endl;
 		if(intensive!=0)cout << "\033[1;35mWARNING !! Cumulant Ratio is not intensive \033[0m\n"<<" "<<endl;
 
-		Cumulant2Moment(maxorder,"NOEXPS");
+//		cout<<" moment "<<MOMENT<<endl;
+		if(maxorder>10){
+			cout << "\033[1;35mWARNING !! Cumulant order is too high (Ignore this for Koch Ratio) \033[0m\n"<<" "<<endl;
+			//cout<<"Im out "<<maxorder<<endl;
+			
+		}else{
+			Cumulant2Moment(maxorder,"NOEXPS");
+		}
 	}
 
 
@@ -6220,6 +6313,105 @@ class CumulantRatio : public CumulantVec, CentVecN
 
 		}
 };
+
+
+class KochRatio : public CumulantRatio
+{
+        protected:
+                vector<FactVec> kratio;
+                FactVec maxvec;
+                vector<FactVec> fvv_ratio;
+
+        public:
+                KochRatio(string input_) : CumulantRatio(input_)
+                {
+
+                        CumulantRatio2Cumulant();
+
+                        vector<int> kvec;
+                        kvec.push_back(0);
+                        kvec.push_back(0);
+                        maxvec.setV(kvec);
+
+                        for(size_t _i=0;_i<Kappa.size();_i++)
+                        {
+
+        //                      Kappa.at(_i).printD();
+        //                      cout<<endl;
+        //                      cout<<"size "<<Kappa.at(_i).size()<<endl;
+
+
+                                FactVec temp_ratio(2);
+
+
+                                if(Kappa.at(_i).getD(0)>=100 || Kappa.at(_i).getD(0)<10)
+                                {
+                                cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio , KR = C_{mn}/C_{kl} \033[0m\n"<<" "<<endl;
+                                abort();
+                                }
+
+                                (Kappa.at(_i).getD(0)>=10) ? temp_ratio.setD(1,(Kappa.at(_i).getD(0)%10)) : temp_ratio.setD(1,Kappa.at(_i).getD(0));
+                                if(Kappa.at(_i).getD(0)>=10) temp_ratio.setD(0,int(Kappa.at(_i).getD(0)/10));
+
+
+                              kratio.push_back(temp_ratio);
+                                maxvec += temp_ratio;
+
+//                              temp_ratio.printD();
+//                              cout<<endl;
+                        }
+
+
+//                      cout<<" Checking the koch ratio "<<kratio.size()<<endl;
+
+                        if(kratio.size()!=2){
+                                cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio , KR = C_{mn}/C_{kl} \033[0m\n"<<" "<<endl;
+                                abort();
+                        }
+
+
+//                      if(kratio.at(0).size()!=2 || kratio.at(1).size()!=2){
+//
+//                              cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio , KR = C_{mn}/C_{kl} \033[0m\n"<<" "<<endl;
+//
+//                              abort();
+//
+//                      }
+
+
+                        cout << "\033[1;34m Input Koch Ratio= C_"<<kratio.at(0).getD(0)<<kratio.at(0).getD(1)<<"/C_"<<kratio.at(1).getD(0)<<kratio.at(1).getD(1)<<"\033[0m\n"<<" "<<endl;
+
+//                      maxvec.printD();
+
+
+                        vector<int> mth__;     // order 02
+
+                        mth__.push_back(maxvec.getD(0));   // order of 1st positive variable
+                        mth__.push_back(maxvec.getD(1));   // order of 2nd positive variable
+
+                        mth__.push_back(maxvec.getD(0));    // order of 1st negative variable
+                        mth__.push_back(maxvec.getD(1));    // order of 2nd negative variable
+
+
+                        CentErrorN cerr__(mth__);// = new CentErrorN(mth__);  // call central moment error estimation class
+                        //freopen("formula.out","w",stdout);
+
+                        cerr__.CalcCentError("NOEXPS");    //calculate the expression of error
+
+                        cout<<"∑=";
+                        cerr__.printE();    //print to see the error expression
+                        cerr__.printD();   //print the efficiency corrected error expression
+
+
+                        fvv_ratio=cerr__.CalcFactVec();
+
+                }
+
+                vector<FactVec> CalcFactVec() {return fvv_ratio;}
+
+                vector<FactVec> getkratio(){return kratio;}
+};
+
 
 
 #endif

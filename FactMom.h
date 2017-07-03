@@ -6315,81 +6315,103 @@ class CumulantRatio : public CumulantVec, CentVecN
 };
 
 
-
-
 class KochRatio : public CumulantRatio
 {
-	protected:
-		vector<FactVec> kratio;
-		FactVec maxvec;
-		vector<FactVec> fvv_ratio;
+        protected:
+                vector<FactVec> kratio;
+                FactVec maxvec;
+                vector<FactVec> fvv_ratio;
 
-	public:
-		KochRatio(string input_) : CumulantRatio(input_)
-		{
+        public:
+                KochRatio(string input_) : CumulantRatio(input_)
+                {
 
-			CumulantRatio2Cumulant();
+                        CumulantRatio2Cumulant();
 
-			vector<int> kvec;
-			kvec.push_back(0);
-			kvec.push_back(0);
-			maxvec.setV(kvec);
+                        vector<int> kvec;
+                        kvec.push_back(0);
+                        kvec.push_back(0);
+                        maxvec.setV(kvec);
 
-			for(size_t _i=0;_i<Kappa.size();_i++)
-			{
+                        for(size_t _i=0;_i<Kappa.size();_i++)
+                        {
 
-	//			Kappa.at(_i).printD();
-	//			cout<<endl;
-	//			cout<<"size "<<Kappa.at(_i).size()<<endl;
-
-
-				FactVec temp_ratio(2);
-
-				(Kappa.at(_i).getD(0)>=10) ? temp_ratio.setD(1,(Kappa.at(_i).getD(0)%10)) : temp_ratio.setD(1,Kappa.at(_i).getD(0));
-				if(Kappa.at(_i).getD(0)>=10) temp_ratio.setD(0,int(Kappa.at(_i).getD(0)/10));
+        //                      Kappa.at(_i).printD();
+        //                      cout<<endl;
+        //                      cout<<"size "<<Kappa.at(_i).size()<<endl;
 
 
-				kratio.push_back(temp_ratio);
-				maxvec += temp_ratio;
+                                FactVec temp_ratio(2);
 
-//				temp_ratio.printD();
-//				cout<<endl;
-			}
 
-  			if(kratio.size()<2){
-                                cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio \033[0m\n"<<" "<<endl;
+                                if(Kappa.at(_i).getD(0)>=100 || Kappa.at(_i).getD(0)<10)
+                                {
+                                cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio , KR = C_{mn}/C_{kl} \033[0m\n"<<" "<<endl;
+                                abort();
+                                }
+
+                                (Kappa.at(_i).getD(0)>=10) ? temp_ratio.setD(1,(Kappa.at(_i).getD(0)%10)) : temp_ratio.setD(1,Kappa.at(_i).getD(0));
+                                if(Kappa.at(_i).getD(0)>=10) temp_ratio.setD(0,int(Kappa.at(_i).getD(0)/10));
+
+
+                              kratio.push_back(temp_ratio);
+                                maxvec += temp_ratio;
+
+//                              temp_ratio.printD();
+//                              cout<<endl;
+                        }
+
+
+//                      cout<<" Checking the koch ratio "<<kratio.size()<<endl;
+
+                        if(kratio.size()!=2){
+                                cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio , KR = C_{mn}/C_{kl} \033[0m\n"<<" "<<endl;
                                 abort();
                         }
-//			maxvec.printD();
 
 
-			vector<int> mth__;     // order 02
-
-			mth__.push_back(maxvec.getD(0));   // order of 1st positive variable
-			mth__.push_back(maxvec.getD(1));   // order of 2nd positive variable
-
-			mth__.push_back(maxvec.getD(0));    // order of 1st negative variable
-			mth__.push_back(maxvec.getD(1));    // order of 2nd negative variable
-
-
-			CentErrorN cerr__(mth__);// = new CentErrorN(mth__);  // call central moment error estimation class
-			//freopen("formula.out","w",stdout);
-
-			cerr__.CalcCentError("NOEXPS");    //calculate the expression of error
-
-			cout<<"∑=";
-			cerr__.printE();    //print to see the error expression
-			cerr__.printD();   //print the efficiency corrected error expression
+//                      if(kratio.at(0).size()!=2 || kratio.at(1).size()!=2){
+//
+//                              cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio , KR = C_{mn}/C_{kl} \033[0m\n"<<" "<<endl;
+//
+//                              abort();
+//
+//                      }
 
 
-			fvv_ratio=cerr__.CalcFactVec();
+                        cout << "\033[1;34m Input Koch Ratio= C_"<<kratio.at(0).getD(0)<<kratio.at(0).getD(1)<<"/C_"<<kratio.at(1).getD(0)<<kratio.at(1).getD(1)<<"\033[0m\n"<<" "<<endl;
 
-		}
+//                      maxvec.printD();
 
-		vector<FactVec> CalcFactVec() {return fvv_ratio;}
 
-		vector<FactVec> getkratio(){return kratio;}
+                        vector<int> mth__;     // order 02
+
+                        mth__.push_back(maxvec.getD(0));   // order of 1st positive variable
+                        mth__.push_back(maxvec.getD(1));   // order of 2nd positive variable
+
+                        mth__.push_back(maxvec.getD(0));    // order of 1st negative variable
+                        mth__.push_back(maxvec.getD(1));    // order of 2nd negative variable
+
+
+                        CentErrorN cerr__(mth__);// = new CentErrorN(mth__);  // call central moment error estimation class
+                        //freopen("formula.out","w",stdout);
+
+                        cerr__.CalcCentError("NOEXPS");    //calculate the expression of error
+
+                        cout<<"∑=";
+                        cerr__.printE();    //print to see the error expression
+                        cerr__.printD();   //print the efficiency corrected error expression
+
+
+                        fvv_ratio=cerr__.CalcFactVec();
+
+                }
+
+                vector<FactVec> CalcFactVec() {return fvv_ratio;}
+
+                vector<FactVec> getkratio(){return kratio;}
 };
+
 
 
 #endif

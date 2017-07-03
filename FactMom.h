@@ -6344,7 +6344,7 @@ class KochRatio : public CumulantRatio
                                 FactVec temp_ratio(2);
 
 
-                                if(Kappa.at(_i).getD(0)>=100 || Kappa.at(_i).getD(0)<10)
+                                if(Kappa.at(_i).getD(0)>=100)
                                 {
                                 cout << "\033[1;31mERROR !! Your input is not a valid Koch Ratio , KR = C_{mn}/C_{kl} \033[0m\n"<<" "<<endl;
                                 abort();
